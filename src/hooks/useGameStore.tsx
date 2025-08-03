@@ -40,10 +40,10 @@ export const useGameStore = create<GameStore>()(
         }),
         reset: () => set((state) => {
             state.bubbles = {}
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 50; i++) {
                 const bubble = {
                     id: bubbleId++,
-                    position: [Math.random() * 20 - 10, Math.random() * 10 + 5, Math.random() * -20] as [number, number, number]
+                    position: [Math.random() * 20 - 10, Math.random() * 10 + 5, Math.random() * 20 - 10] as [number, number, number]
                 };
                 state.bubbles[bubble.id] = bubble;
             }

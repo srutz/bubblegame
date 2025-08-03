@@ -7,7 +7,7 @@ export function GamePanel({ children }: { children?: ReactNode }) {
         <div className="p-8 h-1 grow flex flex-col relative">
             <div className="h-1 grow p-0 relative flex flex-row" >
                 <div className="w-1 grow p-0 relative" id="gamecanvas">
-                    <Canvas camera={{ position: [20, 1, 15], fov: 30, far: 2_000 }} >
+                    <Canvas camera={{ position: [50, 1, 50], fov: 30, far: 2_000 }} >
                         <ResizeObserver />
                         {children}
                     </Canvas>

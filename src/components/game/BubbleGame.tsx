@@ -4,7 +4,7 @@ import { deg2rad } from "@/hooks/Util";
 import { Cloud, Clouds, Environment, OrbitControls, Sky, Stats } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import * as THREE from 'three';
 import { Box } from "./nodes/Box";
 import { MonitoredBubble } from "./nodes/MonitoredBubble";
@@ -15,13 +15,24 @@ export function BubbleGame() {
     const { camera } = useThree()
     const { cameraPosition, cameraRotation } = useCameraTracker(camera)
     const statsParent = useRef(document.getElementById("gamecanvas")!);
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // sync camera position and rotation with the gamestate
+    // Debounced setCamera function
+    const debouncedSetCamera = useCallback((position: [number, number, number], rotation: [number, number, number]) => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+        debounceTimeoutRef.current = setTimeout(() => {
+            setCamera(position, rotation);
+        }, 50);
+    }, [setCamera]);
+
+    // sync camera position and rotation with the gamestate but debounce updates
     useEffect(() => {
-        setCamera(
+        debouncedSetCamera(
             [cameraPosition.x, cameraPosition.y, cameraPosition.z],
             [cameraRotation.x, cameraRotation.y, cameraRotation.z]);
-    }, [cameraPosition, cameraRotation, setCamera]);
+    }, [cameraPosition, cameraRotation, debouncedSetCamera]);
 
     // reset and initialize the game
     useEffect(() => {
@@ -37,9 +48,9 @@ export function BubbleGame() {
             </Clouds>
             <Environment preset="city" />
             <Sky />
-            <Physics  >
-                <RigidBody type="fixed"  >
-                    <Box position={[0, -0.2, 0]} size={[20, 0.1, 20]} rotation={[0, 0, deg2rad(-30)]} color="#2f3000" />
+            <Physics timeStep={"vary"} >
+                <RigidBody type="fixed" rotation={[0, 0, deg2rad(-25)]} >
+                    <Box position={[0, -0.2, 0]} size={[20, 0.5, 20]} color="#2f3000" />
                 </RigidBody>
                 {Object.values(bubbles).map((bubble) => (
                     <MonitoredBubble key={bubble.id} bubble={bubble} onTick={(body) => {
