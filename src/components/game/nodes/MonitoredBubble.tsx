@@ -21,9 +21,10 @@ export function MonitoredBubble({ bubble, onTick }: MonitoredBubbleProps) {
     return (
         <RigidBody 
             ref={rigidBodyRef}
+            colliders={'ball'}
             userData={{ bubbleId: bubble.id }}
         >
-            <Cube position={[...bubble.position]} />
+            <Cube position={[...bubble.position]} size={0.3}/>
         </RigidBody>
     );
 }

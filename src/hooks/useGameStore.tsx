@@ -10,6 +10,7 @@ export type Bubble = {
 let bubbleId = 1; // Global counter for bubble IDs
 
 type GameState = {
+    gameState: "running" | "stopped" | "paused";
     debugMode: boolean;
     bubbles: Record<number, Bubble>;
     cameraPosition: [number, number, number];
@@ -28,10 +29,14 @@ type GameStore = GameState & GameActions;
 
 export const useGameStore = create<GameStore>()(
     immer((set) => ({
+        gameState: "stopped",
         debugMode: false,
         bubbles: {},
         cameraPosition: [0, 0, 0],
         cameraRotation: [0, 0, 0],
+        setGameState: (gameState: GameState["state"]) => set((s) => {
+            s.gameState = gameState;
+        }),
         addBubble: (bubble: Bubble) => set((state) => {
             state.bubbles[bubble.id] = bubble;
         }),

@@ -6,12 +6,16 @@ import { useThree } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { Suspense, useCallback, useEffect, useRef } from "react";
 import * as THREE from 'three';
+import { Spirograph3D } from "./Graoh";
 import { Box } from "./nodes/Box";
+import { BoysSurface } from "./nodes/BoysSurface";
 import { MonitoredBubble } from "./nodes/MonitoredBubble";
+import { RiemannSurface } from "./nodes/RiemannSurface";
+
 
 
 export function BubbleGame() {
-    const { bubbles, addBubble, removeBubble, reset, setCamera, debugMode } = useGameStore();
+    const { gameState, bubbles, addBubble, removeBubble, reset, setCamera, debugMode } = useGameStore();
     const { camera } = useThree()
     const { cameraPosition, cameraRotation } = useCameraTracker(camera)
     const statsParent = useRef(document.getElementById("gamecanvas")!);
@@ -48,22 +52,31 @@ export function BubbleGame() {
             </Clouds>
             <Environment preset="city" />
             <Sky />
-            <Physics timeStep={"vary"} >
-                <RigidBody type="fixed" rotation={[0, 0, deg2rad(-25)]} >
-                    <Box position={[0, -0.2, 0]} size={[20, 0.5, 20]} color="#2f3000" />
-                </RigidBody>
-                {Object.values(bubbles).map((bubble) => (
-                    <MonitoredBubble key={bubble.id} bubble={bubble} onTick={(body) => {
-                        const position = body.translation();
-                        // Check if Y coordinate dropped below -10 (assuming this is your threshold)
-                        if (position.y < -30) {
-                            removeBubble(bubble.id);
-                        }
-                    }} />
-                ))}
-                <OrbitControls />
-            </Physics>
-            {debugMode && (
+            {gameState != "stopped" && (
+                <Physics timeStep={"vary"} colliders={false}>
+                    <RigidBody type="fixed" rotation={[0, 0, deg2rad(-35)]} colliders={'cuboid'}>
+                        <Box position={[0, -0.2, 0]} size={[20, 0.5, 20]} color="#2f3000" />
+                    </RigidBody>
+                    <RigidBody type="fixed" rotation={[0, 0, deg2rad(-35)]} colliders={'cuboid'}>
+                        <Box position={[0, -30.2, 0]} size={[20, 0.5, 20]} color="#2f3000" />
+                    </RigidBody>
+                    {Object.values(bubbles).map((bubble) => (
+                        <MonitoredBubble key={bubble.id} bubble={bubble} onTick={(body) => {
+                            const position = body.translation();
+                            // Check if Y coordinate dropped below -10 (assuming this is your threshold)
+                            if (position.y < -100) {
+                                removeBubble(bubble.id);
+                            }
+                        }} />
+                    ))}
+                <Spirograph3D R={35} r={12} d={3} zAmplitude={38} zFrequency={1} segments={6} />
+                <RiemannSurface segments={120} radius={3} scale={0.8} color="#3498db" />
+                </Physics>
+            )}
+            <BoysSurface />
+            <OrbitControls />
+  
+              {debugMode && (
                 <>
                     <gridHelper args={[20, 20, 'red', 'blue']} position={[0, -0.1, 0]} />
                     <axesHelper args={[10]} position={[0, 0, 0]} />
@@ -73,4 +86,5 @@ export function BubbleGame() {
         </Suspense>
     )
 }
+
 

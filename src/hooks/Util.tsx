@@ -25,3 +25,14 @@ export function euler3ArrayToString(e: [number, number, number], precision: numb
     const [x, y, z] = e;
     return `${rad2deg(x).toFixed(precision)}, ${rad2deg(y).toFixed(precision)}, ${rad2deg(z).toFixed(precision)}`
 }
+
+export function gcd(a: number, b: number) {
+  a = Math.abs(Math.floor(a))
+  b = Math.abs(Math.floor(b))
+  while (b !== 0) {
+    const temp: number = b
+    b = a % b
+    a = temp
+  }
+  return Math.max(a, 1)
+}
