@@ -18,11 +18,12 @@ type GameState = {
 }
 
 type GameActions = {
+    setGameState: (gameState: GameState["gameState"]) => void;
+    setDebugMode: (debugMode: boolean) => void;
     addBubble: (bubble: Bubble) => void;
     removeBubble: (id: number) => void;
     reset: () => void;
     setCamera(position: [number, number, number], rotation: [number, number, number]): void;
-    setDebugMode: (debugMode: boolean) => void;
 }
 
 type GameStore = GameState & GameActions;
@@ -34,8 +35,18 @@ export const useGameStore = create<GameStore>()(
         bubbles: {},
         cameraPosition: [0, 0, 0],
         cameraRotation: [0, 0, 0],
-        setGameState: (gameState: GameState["state"]) => set((s) => {
+        setGameState: (gameState: GameState["gameState"]) => set((s) => {
+            if (s.gameState == gameState) {
+                return;
+            }
+            const oldGameState = s.gameState;
             s.gameState = gameState;
+            if (s.gameState == "running" && oldGameState == "stopped") {
+                doReset(s);
+            }
+        }),
+        setDebugMode: (debugMode: boolean) => set((state) => {
+            state.debugMode = debugMode;
         }),
         addBubble: (bubble: Bubble) => set((state) => {
             state.bubbles[bubble.id] = bubble;
@@ -44,22 +55,23 @@ export const useGameStore = create<GameStore>()(
             delete state.bubbles[id];
         }),
         reset: () => set((state) => {
-            state.bubbles = {}
-            for (let i = 0; i < 50; i++) {
-                const bubble = {
-                    id: bubbleId++,
-                    position: [Math.random() * 20 - 10, Math.random() * 10 + 5, Math.random() * 20 - 10] as [number, number, number]
-                };
-                state.bubbles[bubble.id] = bubble;
-            }
+            doReset(state);
         }),
         setCamera: (position: [number, number, number], rotation: [number, number, number]) => set((state) => {
             state.cameraPosition = position;
             state.cameraRotation = rotation;
         }),
-        setDebugMode: (debugMode: boolean) => set((state) => {
-            state.debugMode = debugMode;
-        }),
     }))
 );
 
+
+function doReset(state: GameStore) {
+    state.bubbles = {}
+    for (let i = 0; i < 100; i++) {
+        const bubble = {
+            id: bubbleId++,
+            position: [Math.random() * 5 - 2.5, Math.random() * 10 + 5, Math.random() * 8 - 4] as [number, number, number]
+        };
+        state.bubbles[bubble.id] = bubble;
+    }
+}

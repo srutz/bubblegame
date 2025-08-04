@@ -13,7 +13,7 @@ type BoysSurfaceProps = {
 }
 
 export function BoysSurface({
-  segments = 80,
+  segments = 180,
   scale = 24,
   color = '#ff6f61',
   wireframe = !false,
@@ -23,6 +23,7 @@ export function BoysSurface({
 
   // Parametric equation for Boy's surface
   const boySurface = (u: number, v: number, target: THREE.Vector3) => {
+    /*
     const U = u * Math.PI;
     const V = v * Math.PI;
     const denom = 2 - Math.sqrt(2) * Math.sin(3 * U) * Math.sin(2 * V);
@@ -32,6 +33,47 @@ export function BoysSurface({
     const z = (Math.sqrt(2) * Math.cos(V)) / denom;
 
     target.set(x, y, z).multiplyScalar(scale);
+    */
+    // pseudocode for mathematica
+    /*
+    z := u + v I
+g1 := -(3/2) Im[(z (1 - z^4))/(z^6 + z^3 Sqrt[5] - 1)]
+g2 := -(3/2) Re[(z (1 + z^4))/(z^6 + z^3 Sqrt[5] - 1)]
+g3 := Im[(1 + z^6)/(z^6 + z^3 Sqrt[5] - 1)] - 1/2
+g = g1^2 + g2^2 + g3^2;
+    */
+    const zRe = u + v * Math.PI;
+    const zIm = v * Math.PI;
+    const z2Re = zRe * zRe - zIm * zIm;
+    const z2Im = 2 * zRe * zIm;
+
+    // Compute numerator and denominator
+    const numRe = z2Re - 1;
+    const numIm = z2Im;
+    const denRe = z2Re + 1;
+    const denIm = z2Im;
+    
+    // Complex division
+    const denom = denRe * denRe + denIm * denIm;
+    const fracRe = (numRe * denRe + numIm * denIm) / denom;
+    const fracIm = (numIm * denRe - numRe * denIm) / denom; 
+
+    // Compute cube root for y
+    const r = Math.sqrt(fracRe * fracRe + fracIm * fracIm);
+    const theta = Math.atan2(fracIm, fracRe);
+    const yMag = Math.cbrt(r);
+    const yArg = theta / 3;
+    
+    const yRe = yMag * Math.cos(yArg);
+    const yIm = yMag * Math.sin(yArg);
+
+    // Map to 3D coords
+    const x = zRe;
+    const y = zIm;
+    const z = yRe; // Use Re(y) as height
+
+    target.set(x * scale, y * scale, z * scale);
+
   };
 
   const geometry = new ParametricGeometry(boySurface, segments, segments);

@@ -4,14 +4,15 @@ export type BoxProps = {
     position: [number, number, number]
     size: [number, number, number]
     color?: string
+    transparency?: number
     onClick?: () => void
 } & JSX.IntrinsicElements['mesh']
 
-export function Box({ position, size, color = "#ff0000", onClick, ...props }: BoxProps) {
+export function Box({ position, size, color = "#ff0000", transparency = 1, onClick, ...props }: BoxProps) {
     return (
         <mesh {...props} position={position} onClick={onClick} >
             <boxGeometry args={size} />
-            <meshBasicMaterial color={color} />
+            <meshBasicMaterial color={color} transparent={transparency < 1} opacity={transparency} />
         </mesh>
     )
 }
